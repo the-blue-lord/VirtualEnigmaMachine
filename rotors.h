@@ -1,5 +1,10 @@
+#define ROTORS_H
+
 #include <iostream>
+
+#ifndef UTILIS_H
 #include "utilis.h"
+#endif
 
 class Rotor {
     public:
