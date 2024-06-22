@@ -1,6 +1,13 @@
 #include <iostream>
 #include <string>
+
+#ifndef ENIGMA_H
 #include "enigma.h"
+#endif
+
+#ifndef  UTILIS_H
+#include "utilis.h"
+#endif
 
 using namespace std;
 
@@ -9,6 +16,9 @@ using namespace std;
 #define MAX_LEN 32768
 
 int main(int argc, char *argv[]) {
+    // If one of the command arguments is -h dsiplay help message and return 1 //
+    for(int i = 0; i < argc; i++) if(!strcmp(argv[i], "-h")) return sendHelpMessage();
+
     // Create two variables to store the machine setup //
     char rotorsOrder[] = "123";
     char rotorsPosition[] = "AAA";
