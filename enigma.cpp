@@ -8,7 +8,7 @@ using namespace std;
 #define ROT_USED 3
 #define MAX_LEN 32768
 
-int main() {
+int main(int argc, char *argv[]) {
     // Create two variables to store the machine setup //
     char rotorsOrder[] = "123";
     char rotorsPosition[] = "AAA";
@@ -31,8 +31,7 @@ int main() {
     Enigma.encode(message);
 
     // Output the transoformed text
-    cout << "\nTransformed text:\n";
-    for(int i = 0; i < strlen(message); i++) cout << message[i];
+    cout << "Transformed text:\n" << message;
 
     return 0;
 }
