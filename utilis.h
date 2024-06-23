@@ -51,7 +51,6 @@ int sendHelpMessage() {
     cout <<
     "                                                                                           \n" <<
     "                                                                                           \n" <<
-    "                                                                                           \n" <<
     "-------------- Virtual Enigma Machine help panel ------------------------------------------\n" <<
     "                                                                                           \n" <<
     "   Commands and arguments in square brackets are [necessary]                               \n" <<
@@ -81,6 +80,14 @@ int sendHelpMessage() {
     "  (-t)       (filename)          Enable transcript for each letter path. On the console if \n" <<
     "                                   no filename is specified, the transcript will be saved  \n" <<
     "                                   in the file with relative path ```./<filename>```.      \n" <<
+    "                                                                                           \n" <<
+    "                                                                                           \n" <<
+    "Examples:                                                                                  \n" <<
+    "   (1)  enigma -h                                                                          \n" <<
+    "   (2)  enigma -t myFolder/transcript1.txt                                                 \n" <<
+    "   (3)  enigma -o 514 -p glv                                                               \n" <<
+    "   (4)  enigma -p tas -t                                                                   \n" <<
+    "   (5)  enigma -t conversions.txt -o 142                                                   \n" <<
     "                                                                                           \n" <<
     "                                                                                           \n";
 
