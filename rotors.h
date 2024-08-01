@@ -1,16 +1,23 @@
 #define ROTORS_H
 
 #include <iostream>
+#include <string.h>
 
-#ifndef UTILIS_H
-#include "utilis.h"
+#ifndef GLOBAL_H
+#include "global.h"
 #endif
+
+using namespace std;
 
 class Rotor {
     public:
         // Class constructor //
         Rotor(int r_num) {
+            setRotor(r_num);
+        }
 
+        void setRotor(int r_num) {
+            
             // Get the five possible rotors plus the reflector//
             const char *transform_factor_builder[6] = {
                 "EKMFLGDQVZNTOWYHXUSPAIBRCJ", // Rotor I
@@ -23,11 +30,13 @@ class Rotor {
 
             // Copy the choosen rotor as the transform factor //
             strcpy(transform_factor, transform_factor_builder[r_num]);
+
+            return;
         }
 
         // Function to transform letters as Enigma Machine rotors //
         char transform(char c) {
-            cout << "'" << c << "' --> ";
+            if(transcriptOnConsole) cout << "'" << c << "' --> ";
             // Check if the character is a letter //
             bool charIsLetter = (65 <= c && c <= 90) || (97 <= c && c <= 122);
             // If it isn't return the character unchanged //
@@ -59,7 +68,7 @@ class Rotor {
             // If it was lowercase, lowercase it //
             if(charIsLowercase) c += 32;
 
-            cout << "'" << c << "'\n";
+            if(transcriptOnConsole) cout << "'" << c << "'\n";
 
             // Return the character //
             return c;
@@ -67,7 +76,7 @@ class Rotor {
         
         // Function to transform backwards letters as Enigma Machine rotors //
         char antitransform(char c) {
-            cout << "'" << c << "' --> ";
+            if(transcriptOnConsole) cout << "'" << c << "' --> ";
             // Check if the character is a letter //
             bool charIsLetter = (65 <= c && c <= 90) || (97 <= c && c <= 122);
             // If it isn't return the character unchanged //
@@ -101,7 +110,7 @@ class Rotor {
             // If it was lowercase, lowercase it //
             if(charIsLowercase) c += 32;
 
-            cout << "'" << c << "'\n";
+            if(transcriptOnConsole) cout << "'" << c << "'\n";
 
             // Return the character //
             return c;
@@ -135,11 +144,17 @@ class Rotor {
             return;
         }
 
+        void setPosition(int newPos) {
+            position = newPos;
+            return;
+        }
+        
+        // Create an integer to store the position of the rotor //
+        int position = 0;
+
     private:
         // Create an array of characters to manage the transformation of letters //
         char transform_factor[27];
-        // Create an integer to store the position of the rotor //
-        int position = 0;
         // Create a pointer to point to the next rotor //
         Rotor *r_next = nullptr;
 

@@ -9,6 +9,10 @@
 #include "utilis.h"
 #endif
 
+#ifndef GLOBAL_H
+#include "global.h"
+#endif
+
 using namespace std;
 
 // Define constants for the number of rotors used and for the maximum lenght of the message //
@@ -16,20 +20,50 @@ using namespace std;
 #define MAX_LEN 32768
 
 int main(int argc, char *argv[]) {
-    // If one of the command arguments is -h dsiplay help message and return 1 //
-    for(int i = 0; i < argc; i++) if(!strcmp(argv[i], "-h")) return sendHelpMessage();
+    int orderIndex = 0, positionIndex = 0, transcriptIndex = 0, helpIndex = 0;
 
-    // Create two variables to store the machine setup //
-    char rotorsOrder[] = "123";
-    char rotorsPosition[] = "AAA";
+    for(int i = 0; i < argc; i++) {
+        if (orderIndex == 0 && !strcmp(argv[i], "-o")) {
+            orderIndex = i;
+            continue;
+        }
+        else if (positionIndex == 0 && !strcmp(argv[i], "-p")) {
+            positionIndex = i;
+            continue;
+        }
+        else if (transcriptIndex == 0 && !strcmp(argv[i], "-t")) {
+            transcriptIndex = i;
+            continue;
+        }
+        else if(helpIndex == 0 && !strcmp(argv[i], "-h")) {
+            helpIndex = i;
+            cout << "\n";
+            displayHelpPanel();
+            return 0;
+        }
+    }
 
+    if(transcriptIndex) {
+        if(!argv[transcriptIndex+1] || argv[transcriptIndex+1][0] == '-') transcriptOnConsole = true;
+        else transcriptOnFile = true;
+    }
+
+    // Get the VEM setup //
+    if(orderIndex) str_cpy(rotorsOrder, argv[orderIndex+1]);
+    if(positionIndex) str_cpy(rotorsPosition, argv[positionIndex+1]);
+
+    EnigmaMachine VEM(rotorsOrder, rotorsPosition);
+
+    printInitialDashboard(&VEM);
+
+    while(1) newTerminalLine(&VEM);
+
+    return 0;
+}
+
+void transformText(EnigmaMachine *Enigma) {
     // Create a variable where to store the string to transform //
     char message[MAX_LEN];
-
-    // Get the machine setup //
-    cout << "\n";
-    get_rotorsOrder(rotorsOrder);
-    get_rotorsPosition(rotorsPosition);
 
     // Get text to transform //
     cout << "\nInsert the text here:\n";
@@ -37,11 +71,9 @@ int main(int argc, char *argv[]) {
     cin.getline(message, MAX_LEN);
 
     // Transform text //
-    EnigmaMachine Enigma(rotorsOrder, rotorsPosition);
-    Enigma.encode(message);
+    Enigma->encode(message);
 
     // Output the transoformed text
     cout << "Transformed text:\n" << message;
 
-    return 0;
 }
