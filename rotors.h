@@ -40,7 +40,10 @@ class Rotor {
             // Check if the character is a letter //
             bool charIsLetter = (65 <= c && c <= 90) || (97 <= c && c <= 122);
             // If it isn't return the character unchanged //
-            if(!charIsLetter) return c;
+            if(!charIsLetter) {
+                cout << "'" << c << "'\n";
+                return c;
+            }
 
             // Memorize if the character is lowercase //
             bool charIsLowercase = (c > 96);
