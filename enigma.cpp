@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     printInitialDashboard(&VEM);
 
-    while(1) newTerminalLine(&VEM);
+    while(1) newConsoleLine(&VEM);
 
     return 0;
 }

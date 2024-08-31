@@ -18,7 +18,7 @@ void str_cpy(char *des, const char *ori);
 void displayHelpPanel(void);
 
 void printInitialDashboard(EnigmaMachine *VEM);
-void newTerminalLine(EnigmaMachine *VEM);
+void newConsoleLine(EnigmaMachine *VEM);
 void runCommand(EnigmaMachine *VEM, char *command);
 
 void notifyDumbError(void);
@@ -49,7 +49,7 @@ void printInitialDashboard(EnigmaMachine *VEM) {
     return;
 }
 
-void newTerminalLine(EnigmaMachine *VEM) {
+void newConsoleLine(EnigmaMachine *VEM) {
     cout << "VEM|" << VEM->rotOrder << "-" << VEM->rotPosition << "> ";
 
     char command[4096];
@@ -61,19 +61,39 @@ void newTerminalLine(EnigmaMachine *VEM) {
 }
 
 void runCommand(EnigmaMachine *VEM, char *command) {
-    char commandName = command[0];
+    char commandName = '#';
+    
+    char commandInput[8];
+    bool commandGot = false;
+    for(int i = 0; i < 8; i++) {
+        if(command[i] == ' ') {
+            commandGot = true;
+            commandInput[i] = '\0';
+        }
+        else if(!commandGot) commandInput[i] = command[i];
+        else commandInput[i] = '\0';
+    }
+    commandInput[7] = '\0';
+    
 
-    bool thereAreArguments = (command[1] == ' ');
+    if(command[1] == ' ' || command[1] == '\0') commandName = command[0];
 
-    char commandArgument[4096];
-    for(int i = 0; i < 4096; i++) commandArgument[i] = '\0';
-    if(thereAreArguments) for(int i = 0; i < 4094 && command[i+2] != '\0'; i++) commandArgument[i] = command[i+2];
+    int startingIndex = -1;
+    for(int i = 0; true; i++) {
+        if(startingIndex == -1 && command[i] == ' ') startingIndex = i+1;
+        else if(startingIndex == -1) continue;
+        else command[i-startingIndex] = command[i];
+       
+        if(command[i] == '\0') break;
+    }
+
+    if(startingIndex == -1) command[0] = '\0';
 
     if(commandName == '-') notifyDumbError();
-    else if(commandName == 'm') encodeMessage(VEM, commandArgument);
-    else if(commandName == 'o') changeRotorsOrder(VEM, commandArgument);
-    else if(commandName == 'p') changeRotorsPositions(VEM, commandArgument);
-    else if(commandName == 't') changeTranscriptState(commandArgument);
+    else if(commandName == 'm') encodeMessage(VEM, command);
+    else if(commandName == 'o') changeRotorsOrder(VEM, command);
+    else if(commandName == 'p') changeRotorsPositions(VEM, command);
+    else if(commandName == 't') changeTranscriptState(command);
     else if(commandName == 'h') displayHelpPanel();
     else if(commandName == 'e') exit(0);
     
@@ -94,34 +114,45 @@ void notifyDumbError(void) {
 }
 
 void changeRotorsOrder(EnigmaMachine *VEM, char *order) {
-    cout << "[INFO] Changing rotors order...\n";
     char newOrder[4] = "111";
     for(int i = 0; i < 3; i++) newOrder[i] = VEM->rotOrder[i];
     for(int i = 0; i < 3 && order[i] != '\0'; i++) newOrder[i] = order[i];
     newOrder[3] = '\0';
     VEM->setRotorsOrder(newOrder);
+    cout << "[INFO] Rotors order changed\n";
 }
 
 void changeRotorsPositions(EnigmaMachine *VEM, char *position) {
-    cout << "[INFO] Changing rotors positions...\n";
     char newPosition[4] = "AAA";
     for(int i = 0; i < 3; i++) newPosition[i] = VEM->rotPosition[i];
     for(int i = 0; i < 3 && position[i] != '\0'; i++) newPosition[i] = position[i];
     newPosition[3] = '\0';
     VEM->setRotorsPositions(newPosition);
+    cout << "[INFO] Rotors positions changed\n";
 
 }
 
 void changeTranscriptState(char *filename) {
-    cout << "[ERROR] Unfortunately transicripts are not available yet, they'll soon be\n";
+    if(filename[0] == '\0') {
+        transcriptOnConsole = !(transcriptOnFile || transcriptOnConsole);
+        transcriptOnFile = false;
+        if(!transcriptOnConsole) std::cout << "[INFO] Transcripts disabled\n";
+        else std::cout << "[INFO] Transcript on console enabled\n";
+    }
+    else {
+        transcriptOnConsole = false;
+        transcriptOnFile = true;
+        std::cout << "[INFO] Transcript on file enabled\n";
+        std::cout << "[ERROR] Unfortunately transicripts on files are not available yet, they'll soon be!\n";
+    }
     return;
 }
 
 void displayHelpPanel(void) {
-    cout <<
+    std::cout <<
     "-------------- Virtual Enigma Machine help panel ------------------------------------------\n" <<
     "                                                                                           \n" <<
-    "   Commands in curly braces are {unavailable}                                              \n" <<
+    "   Commands and arguments in curly braces are {unavailable}                                \n" <<
     "   Arguments in square brackets are [necessary]                                            \n" <<
     "   Arguments in round brackets are (optional)                                              \n" <<
     "                                                                                           \n" <<
@@ -146,7 +177,7 @@ void displayHelpPanel(void) {
     "                                                                                           \n" <<
     "  -h         - none -            Display this help message.                                \n" <<
     "                                                                                           \n" <<
-    "  -t         (filename)          Enable transcript for each letter path. On the console if \n" <<
+    "  -t       {(filename)}          Enable transcript for each letter path. On the console if \n" <<
     "                                   no filename is specified, otherwise the transcript will \n" <<
     "                                   be saved  in the file with relative path `./<filename>`.\n" <<
     "                                                                                           \n" <<
@@ -155,12 +186,12 @@ void displayHelpPanel(void) {
     "   enigma -h                                                                               \n" <<
     "   enigma -o 514 -p glv                                                                    \n" <<
     "   enigma -t myFolder/transcript1.txt                                                      \n" <<
-    "   enigma -p FTG tas -t                                                                        \n" <<
-    "   enigma -t conversions.txt -o 142                                                        \n" <<
+    "   enigma -p FTG tas -t                                                                    \n" <<
+    "   enigma -t {conversions.txt} -o 142                                                      \n" <<
     "                                                                                           \n" <<
     "N.B.:                                                                                      \n" <<
-    "   Commands in the VEM terminal do not change at all. Just keep in mind that must be execu-\n" <<
-    "    -ted without the inital `-`.                                                           \n" <<
+    "   Commands in the VEM Console do not change at all. Just keep in mind that must be execut-\n" <<
+    "    -ed without the inital `-`.                                                            \n" <<
     "                                                                                           \n" <<
     "-------------------------------------------------------------------------------------------\n" <<
     "                                                                                           \n";
