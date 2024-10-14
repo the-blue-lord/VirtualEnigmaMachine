@@ -20,7 +20,7 @@ using namespace std;
 #define MAX_LEN 32768
 
 int main(int argc, char *argv[]) {
-    int orderIndex = 0, positionIndex = 0, transcriptIndex = 0, helpIndex = 0;
+    int orderIndex = 0, positionIndex = 0, transcriptIndex = 0, helpIndex = 0, plugBoardIndex = 0;
 
     for(int i = 0; i < argc; i++) {
         if (orderIndex == 0 && !strcmp(argv[i], "-o")) {
@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
             displayHelpPanel();
             return 0;
         }
+        else if(plugBoardIndex == 0 && !strcmp(argv[i], "-pB")) {
+            plugBoardIndex = i;
+            continue;
+        }
     }
 
     if(transcriptIndex) {
@@ -53,6 +57,12 @@ int main(int argc, char *argv[]) {
     if(positionIndex) str_cpy(rotorsPosition, argv[positionIndex+1]);
 
     EnigmaMachine VEM(rotorsOrder, rotorsPosition);
+
+    if(plugBoardIndex) {
+        for(int i = plugBoardIndex+1; i < argc && argv[i][0] != '-'; i++) {
+            VEM.plug(argv[i][0], argv[i][1]);
+        }
+    }
 
     printInitialDashboard(&VEM);
 

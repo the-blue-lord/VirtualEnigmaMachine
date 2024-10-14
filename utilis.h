@@ -23,6 +23,9 @@ void runCommand(EnigmaMachine *VEM, char *command);
 
 void notifyDumbError(void);
 void encodeMessage(EnigmaMachine *VEM, char *message);
+void plugBoard(EnigmaMachine *VEM, char *plugs);
+void unplugBoard(EnigmaMachine *VEM, char *plugs, bool unplugAll);
+void plugList(EnigmaMachine *VEM);
 void changeRotorsOrder(EnigmaMachine *VEM, char *order);
 void changeRotorsPositions(EnigmaMachine *VEM, char *position);
 void changeTranscriptState(char *filename);
@@ -43,7 +46,9 @@ void printInitialDashboard(EnigmaMachine *VEM) {
     "VEM Settings:\n" <<
     "   Rotors:     " <<  VEM->rotOrder[0]   << " - " <<  VEM->rotOrder[1]   << " - " <<  VEM->rotOrder[2]   << "\n" <<
     "   Position:   " << VEM->rotPosition[0] << " - " << VEM->rotPosition[1] << " - " << VEM->rotPosition[2] << "\n" <<
-    "\n" <<
+    "   Plugboard: ";
+    for(int i = 0; i < 26; i++) if(VEM->plugboard[i][0] < VEM->plugboard[i][1]) std::cout << " " << (char)(VEM->plugboard[i][0]-32) << "/" << (char)(VEM->plugboard[i][1]-32);
+    std::cout << "\n\n" <<
     "(type `h` for help, `e` to exit)" <<
     "\n\n";
     return;
@@ -78,6 +83,8 @@ void runCommand(EnigmaMachine *VEM, char *command) {
 
     if(command[1] == ' ' || command[1] == '\0') commandName = command[0];
 
+    bool unplugAll = (command[2] == '\0') || (command[2] == ' ');
+
     int startingIndex = -1;
     for(int i = 0; true; i++) {
         if(startingIndex == -1 && command[i] == ' ') startingIndex = i+1;
@@ -91,6 +98,9 @@ void runCommand(EnigmaMachine *VEM, char *command) {
 
     if(commandName == '-') notifyDumbError();
     else if(commandName == 'm') encodeMessage(VEM, command);
+    else if(!strcmp(commandInput, "pB")) plugBoard(VEM, command);
+    else if(!strcmp(commandInput, "uB")) unplugBoard(VEM, command, unplugAll);
+    else if(!strcmp(commandInput, "pL")) plugList(VEM);
     else if(commandName == 'o') changeRotorsOrder(VEM, command);
     else if(commandName == 'p') changeRotorsPositions(VEM, command);
     else if(commandName == 't') changeTranscriptState(command);
@@ -103,6 +113,39 @@ void runCommand(EnigmaMachine *VEM, char *command) {
 void encodeMessage(EnigmaMachine *VEM, char *message) {
     VEM->encode(message);
     cout << "[SECRET MESSAGE] " << message << "\n";
+    return;
+}
+
+void plugBoard(EnigmaMachine *VEM, char *plugs) {
+    for(int i = 0; plugs[i] && plugs[i+1]; i=i+3) VEM->plug(plugs[i], plugs[i+1]);
+    plugList(VEM);
+    return;
+}
+
+void unplugBoard(EnigmaMachine *VEM, char *plugs, bool unplugAll) {
+    if(unplugAll) {
+        for(int i = 0; i < 26; i++) VEM->plugboard[i][1] = VEM->plugboard[i][0];
+        plugList(VEM);
+        return;
+    }
+    for(int i = 0; strlen(plugs); i++) VEM->unplug(plugs[i]);
+    plugList(VEM);
+    return;
+}
+
+void plugList(EnigmaMachine *VEM) {
+    bool plugboardEmpty = true;
+    std::cout << "[INFO] Plugboard:";
+    for(int i = 0; i < 26; i++)
+        if(VEM->plugboard[i][0] < VEM->plugboard[i][1] && ((plugboardEmpty=(plugboardEmpty&&!(VEM->plugboard[i][0] < VEM->plugboard[i][1])))||1))
+            std::cout
+            << " "
+            << (char)(VEM->plugboard[i][0]-32)
+            << "/"
+            << (char)(VEM->plugboard[i][1]-32);
+    
+    if(plugboardEmpty) std::cout << " --";
+    std::cout << "\n";
     return;
 }
 
